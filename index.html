@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Movies List</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 20px;
+      }
+      h1 {
+        text-align: center;
+        color: #333;
+      }
+      .movies-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+      }
+      .movie-card {
+        background-color: white;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        width: 200px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        text-align: center;
+      }
+      .movie-card img {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+      }
+      .movie-card .content {
+        padding: 15px;
+      }
+      .movie-card h2 {
+        font-size: 18px;
+        margin: 10px 0;
+        color: #333;
+      }
+      .movie-card p {
+        margin: 5px 0;
+        color: #555;
+      }
+      .movie-card .popular {
+        color: green;
+        font-weight: bold;
+      }
+      .movie-card .not-popular {
+        color: red;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Welcome, <span id="user-name"></span>! You are logged in.</h1>
+    <div class="movies-container" id="movies-container">
+      <!-- Movie cards will be injected here by JavaScript -->
+    </div>
+
+    <script>
+      // Fetch authenticated user's name and display it
+      async function fetchUserInfo() {
+        try {
+          const response = await fetch("/user-info"); // Endpoint to fetch authenticated user details
+          const user = await response.json();
+          document.getElementById("user-name").textContent = user.name;
+        } catch (error) {
+          console.error("Error fetching user info:", error);
+        }
+      }
+
+      // Fetch movies from the API and display them
+      async function fetchMovies() {
+        try {
+          const response = await fetch("/api/movies/popular", {
+            credentials: "include",
+          });
+          const movies = await response.json();
+
+          const moviesContainer = document.getElementById("movies-container");
+          moviesContainer.innerHTML = ""; // Clear any previous content
+
+          movies.forEach((movie) => {
+            const movieCard = `
+                        <div class="movie-card">
+                            <img src="http://localhost:8080${
+                              movie.posterUrl
+                            }" alt="${movie.title}">
+                            <div class="content">
+                                <h2>${movie.title}</h2>
+                                <p>Genre: ${movie.genre}</p>
+                                <p class="${
+                                  movie.isPopular ? "popular" : "not-popular"
+                                }">
+                                    ${
+                                      movie.isPopular
+                                        ? "Popular"
+                                        : "Not Popular"
+                                    }
+                                </p>
+                            </div>
+                        </div>
+                    `;
+            moviesContainer.innerHTML += movieCard;
+          });
+        } catch (error) {
+          console.error("Error fetching movies:", error);
+          document.getElementById("movies-container").innerHTML =
+            "<p>Failed to load movies.</p>";
+        }
+      }
+
+      // Call the functions when the page loads
+      window.onload = function () {
+        fetchUserInfo(); // Display logged-in user info
+        fetchMovies(); // Display movies
+      };
+    </script>
+  </body>
+</html>
